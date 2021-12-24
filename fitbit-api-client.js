@@ -1,10 +1,14 @@
 'use strict';
 const OAuth2 = require('simple-oauth2').create;
 const Request = require('request');
+const crypto = require('crypto');
 
 module.exports = class FitbitApiClient {
-	constructor({clientId, clientSecret, apiVersion = '1.2'}) {
+	constructor({clientId, clientSecret, apiVersion = '1'}) {
 		this.apiVersion = apiVersion;
+
+		this.codeVerifier = crypto.randomBytes(20).toString('hex');
+
 		this.oauth2 = OAuth2({
 			client: {
 				id: clientId,
@@ -42,12 +46,15 @@ module.exports = class FitbitApiClient {
 		return headers;
 	}
 
-	getAuthorizeUrl(scope, redirectUrl, prompt, state) {
+	getAuthorizeUrl(scope, redirectUrl) {
+		const codeChallengeHash = crypto.createHash('sha256');
+		codeChallengeHash.update(this.codeVerifier);
+
 		return this.oauth2.authorizationCode.authorizeURL({
 			scope: scope,
 			redirect_uri: redirectUrl,
-			prompt: prompt,
-			state: state
+			code_challenge: codeChallengeHash.digest(),
+			code_challenge_method: 'S256'
 		}).replace('api', 'www');
 	}
 
