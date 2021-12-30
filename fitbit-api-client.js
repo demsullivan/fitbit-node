@@ -1,5 +1,5 @@
 'use strict';
-const OAuth2 = require('simple-oauth2').create;
+const { AuthorizationCode } = require('simple-oauth2');
 const Request = require('request');
 const crypto = require('crypto');
 
@@ -9,10 +9,9 @@ module.exports = class FitbitApiClient {
 
 		this.codeVerifier = crypto.randomBytes(20).toString('hex');
 
-		this.oauth2 = OAuth2({
+		this.oauth2 = new AuthorizationCode({
 			client: {
-				id: clientId,
-				secret: clientSecret
+				id: clientId
 			},
 			auth: {
 				tokenHost: 'https://api.fitbit.com/',
@@ -20,6 +19,9 @@ module.exports = class FitbitApiClient {
 				revokePath: 'oauth2/revoke',
 				authorizeHost: 'https://www.fitbit.com/',
 				authorizePath: 'oauth2/authorize'
+			},
+			options: {
+				authorizationMethod: 'body'
 			}
 		});
 	}
@@ -47,19 +49,20 @@ module.exports = class FitbitApiClient {
 		const codeChallengeHash = crypto.createHash('sha256');
 		codeChallengeHash.update(this.codeVerifier);
 
-		return this.oauth2.authorizationCode.authorizeURL({
+		return this.oauth2.authorizeURL({
 			scope: scope,
-			redirect_uri: redirectUrl,
+			redirectURI: redirectUrl,
+			state: "x",
 			code_challenge: codeChallengeHash.digest(),
 			code_challenge_method: 'S256'
 		}).replace('api', 'www');
 	}
 
 	async getAccessToken(code, redirectUrl) {
-		return await this.oauth2.authorizationCode.getToken({
+		return await this.oauth2.getToken({
 			code: code,
 			code_verifier: this.codeVerifier,
-			redirect_uri: redirectUrl
+			redirectURI: redirectUrl
 		});
 	}
 
