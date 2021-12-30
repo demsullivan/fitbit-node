@@ -64,7 +64,7 @@ module.exports = class FitbitApiClient {
 	async getAccessToken(code, redirectUrl) {
 		return new Promise((resolve, reject) => {
 			Request({
-				url: `${this.authOptions.tokenHost}/${this.authOptions.tokenPath}`,
+				url: `${this.authOptions.auth.tokenHost}/${this.authOptions.auth.tokenPath}`,
 				method: 'POST',
 				headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
 				form: {
