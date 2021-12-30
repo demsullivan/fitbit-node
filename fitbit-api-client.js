@@ -9,7 +9,7 @@ module.exports = class FitbitApiClient {
 
 		this.codeVerifier = crypto.randomBytes(20).toString('hex');
 
-		this.oauth2 = new AuthorizationCode({
+		this.authOptions = {
 			client: {
 				id: clientId
 			},
@@ -23,7 +23,9 @@ module.exports = class FitbitApiClient {
 			options: {
 				authorizationMethod: 'body'
 			}
-		});
+		};
+
+		this.oauth2 = new AuthorizationCode(this.authOptions);
 	}
 
 	getUrl(path, userId){
@@ -58,11 +60,27 @@ module.exports = class FitbitApiClient {
 		}).replace('api', 'www');
 	}
 
+
 	async getAccessToken(code, redirectUrl) {
-		return await this.oauth2.getToken({
-			code: code,
-			code_verifier: this.codeVerifier,
-			redirectURI: redirectUrl
+		return new Promise((resolve, reject) => {
+			Request({
+				url: `${this.authOptions.tokenHost}/${this.authOptions.tokenPath}`,
+				method: 'POST',
+				headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+				form: {
+					code,
+					client_id: this.authOptions.client.id,
+					code_verifier: this.codeVerifier,
+					grant_type: 'authorization_code'
+				}
+			}, (err, response, body) => {
+				if (err) {
+					reject(err);
+				} else {
+					const payload = JSON.parse(body);
+					resolve(payload);
+				}
+			})
 		});
 	}
 
