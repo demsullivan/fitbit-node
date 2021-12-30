@@ -58,18 +58,11 @@ module.exports = class FitbitApiClient {
 		}).replace('api', 'www');
 	}
 
-	getAccessToken(code, redirectUrl) {
-		return new Promise((resolve, reject) => {
-			this.oauth2.authorizationCode.getToken({
-				code: code,
-				redirect_uri: redirectUrl
-			}, (error, result) => {
-				if (error) {
-					reject(error);
-				} else {
-					resolve(result);
-				}
-			});
+	async getAccessToken(code, redirectUrl) {
+		return await this.oauth2.authorizationCode.getToken({
+			code: code,
+			code_verifier: this.codeVerifier,
+			redirect_uri: redirectUrl
 		});
 	}
 
