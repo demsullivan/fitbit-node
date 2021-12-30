@@ -18,11 +18,8 @@ module.exports = class FitbitApiClient {
 				tokenHost: 'https://api.fitbit.com/',
 				tokenPath: 'oauth2/token',
 				revokePath: 'oauth2/revoke',
-				authorizeHost: 'https://api.fitbit.com/',
+				authorizeHost: 'https://www.fitbit.com/',
 				authorizePath: 'oauth2/authorize'
-			},
-			options: {
-				useBasicAuthorizationHeader: true
 			}
 		});
 	}
